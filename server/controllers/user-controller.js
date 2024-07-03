@@ -1,3 +1,5 @@
+const User = require('../models/User.js');
+
 class UserController {
     async getUser(req, res) {
         const userId = req.query.userId;
@@ -5,9 +7,9 @@ class UserController {
         try {
             const user = userId ? await User.findById(userId) : await User.findOne({ username: username });
             const { password, updatedAt, ...other } = user._doc;
-            res.status(200).json(other);
+            return res.status(200).json(other);
         } catch (err) {
-            res.status(500).json(err);
+            return res.status(500).json('An error occured! ' + err);
         }
     }
     async updateUser(req, res) {
@@ -17,7 +19,7 @@ class UserController {
                     const salt = await bcrypt.genSalt(10);
                     req.body.password = await bcrypt.hash(req.body.password, salt);
                 } catch (err) {
-                    return res.status(500).json(err);
+                    return res.status(500).json('An error occured! ' + err);
                 }
             }
             try {
@@ -26,7 +28,7 @@ class UserController {
                 });
                 res.status(200).json('Account has been updated');
             } catch (err) {
-                return res.status(500).json(err);
+                return res.status(500).json('An error occured! ' + err);
             }
         } else {
             return res.status(403).json('You can update only your account!');
@@ -36,9 +38,9 @@ class UserController {
         if (req.body.userId === req.params.id || req.body.isAdmin) {
             try {
                 await User.findByIdAndDelete(req.params.id);
-                res.status(200).json('Account has been deleted');
+                return res.status(200).json('Account has been deleted');
             } catch (err) {
-                return res.status(500).json(err);
+                return res.status(500).json('An error occured! ' + err);
             }
         } else {
             return res.status(403).json('You can delete only your account!');
@@ -57,15 +59,15 @@ class UserController {
                 const { _id, username, profilePicture } = friend;
                 friendList.push({ _id, username, profilePicture });
             });
-            res.status(200).json(friendList);
+            return res.status(200).json(friendList);
         } catch (err) {
-            res.status(500).json(err);
+            return res.status(500).json('An error occured! ' + err);
         }
     }
     async followUser(req, res) {
         try {
             if (req.body.userId === req.params.id) {
-                res.status(403).json('you cant follow yourself');
+                return res.status(403).json('you cant follow yourself');
             }
 
             const user = await User.findById(req.params.id);
@@ -74,12 +76,12 @@ class UserController {
             if (!user.followers.includes(req.body.userId)) {
                 await user.updateOne({ $push: { followers: req.body.userId } });
                 await currentUser.updateOne({ $push: { followings: req.params.id } });
-                res.status(200).json('user has been followed');
+                return res.status(200).json('user has been followed');
             } else {
-                res.status(403).json('you allready follow this user');
+                return res.status(403).json('you allready follow this user');
             }
         } catch (err) {
-            res.status(500).json(err);
+            return res.status(500).json('An error occured! ' + err);
         }
     }
     async unfollowUser(req, res) {
@@ -94,12 +96,12 @@ class UserController {
             if (user.followers.includes(req.body.userId)) {
                 await user.updateOne({ $pull: { followers: req.body.userId } });
                 await currentUser.updateOne({ $pull: { followings: req.params.id } });
-                res.status(200).json('user has been unfollowed');
+                return res.status(200).json('user has been unfollowed');
             } else {
-                res.status(403).json('you dont follow this user');
+                return res.status(403).json('you dont follow this user');
             }
         } catch (err) {
-            res.status(500).json(err);
+            return res.status(500).json('An error occured! ' + err);
         }
     }
 }

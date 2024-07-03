@@ -1,11 +1,15 @@
-const userRoute = require("./routes/users");
-const authRoute = require("./routes/auth");
-const postRoute = require("./routes/posts");
+const userRoute = require('./users');
+const authRoute = require('./auth');
+const postRoute = require('./posts');
+const conversationRouter = require('./conversations');
+const messageRouter = require('./messages');
 
 function route(app) {
-    app.use("/api/auth", authRoute);
-    app.use("/api/users", userRoute);
-    app.use("/api/posts", postRoute);
+    app.use('/api/auth', authRoute);
+    app.use('/api/users', userRoute);
+    app.use('/api/posts', postRoute);
+    app.use('/api/conversations', conversationRouter);
+    app.use('/api/messages', messageRouter);
 }
 
-exports.module = route
+module.exports = route;
